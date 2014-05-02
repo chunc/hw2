@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wiki Search</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css"> -->
+
+
+</head>
+<body>
+    <!-- ================= -->
+    <!--Presentation Tier-->
+    <!-- ================= -->
+
+    <h1>ChunC Super Fast Wikipedia Search</h1>
+
+    <br>
+
+    <div class="row">
+        <form role="form">
+            <div class="col-sm-6">
+                <input type="text" class="form-control" id="string_input" placeholder="Search Here">
+            </div>
+        </form>
+    </div>
+
+    <br>
+    
+    <!--<button onclick="stringReplace()">Test stuff</button>-->
+
+    <table class="table table-hover" id="results"></table>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+
+        //----------------
+        //Business Tier
+        //----------------
+
+        // Autocomplete search function
+        $(function () {
+            $(".form-control").keyup(function () {
+                var key_input = $(this).val();
+                key_input = key_input.trim();
+                key_input = formatString(key_input);
+
+                if (key_input !== '') {
+                    //Make AJAX call
+                    var data = {};
+                    data.input = key_input;
+
+                    $.ajax({
+                        type: "POST",
+                        url: "WebService.asmx/getSearchResult",
+                        //data: "{input: key_input}",
+                        data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "JSON",
+                        success: function (msg) {
+                            var list = JSON.parse(msg.d);
+
+                            $('.table_rows').html("");
+                            jQuery.each(list, function (index, value) {
+                                //$('#content').html(value);
+                                var word = list[index].replace(/_/g, " ");
+                                word = toTitleCase(word);
+                                var tr = "<tr class='table_rows'>";
+                                //var td = "<td>" + list[index] + "</td></tr>";
+                                var td = "<td>" + word + "</td></tr>";
+                                $('#results').append(tr + td);
+                            });
+                            
+                        },
+                        error: function (msg) {
+                            console.log("Not working");
+                        }
+                    });
+
+                } else if (key_input == '') {
+                    $('.table_rows').html("");
+                }
+            });
+        });
+
+        //Converts space characters into underscores
+        function formatString(string) {
+            //var text = string.charAt(0).toUpperCase() + string.slice(1);    //Capitalizes first letter
+            var text = string.replace(/ /g, '_') //Converts spaces into underscore
+            return text;
+        }
+
+        //Capitalizes the first letter of each word
+        function toTitleCase(str) {
+            return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
+        }
+
+        
+    </script>
+
+</body>
+</html>
